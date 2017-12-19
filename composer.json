@@ -1,4 +1,14 @@
 {
+    "name": "notate/notate",
+    "description": "auto convert json columns to collections, relation support",
+    "license": "MIT",
+    "keywords": ["notate","laravel","eloquent","json","collection","relationship"],
+    "homepage": "https://github.com/mink/notate",
+    "autoload": {
+        "psr-4": {
+            "Notate\\": "src"
+        }
+    },
     "require": {
         "illuminate/database": "^5.5",
         "illuminate/support": "^5.5"
