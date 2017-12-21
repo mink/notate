@@ -13,7 +13,7 @@ composer require notate/notate
 ### Usage
 
 ```php
-use Notate;
+use Notate\Notate;
 
 class User extends Model
 {
