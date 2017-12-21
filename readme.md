@@ -4,6 +4,14 @@ Notate is a tool used to convert your Eloquent JSON columns into `Illuminate\Sup
 
 Notate also allows you to use data JSON columns to create *very basic* Eloquent relationships, creating pseudo-relations via the hasOne and hasMany model methods (further support to come soon).
 
+### Installation
+
+```
+composer require notate/notate
+```
+
+### Usage
+
 ```php
 use Notate;
 
