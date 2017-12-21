@@ -35,7 +35,7 @@ trait Notate
         {
             if($model->{$column} instanceof Collection)
             {
-                $model->{$column} = new $model->{$column}->toJson();
+                $model->{$column} = $model->{$column}->toJson();
             }
         }
         return $model;
