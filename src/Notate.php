@@ -86,7 +86,7 @@ trait Notate
     {
         if(!str_contains($localKey, '->'))
         {
-            return parent::hasOne($related, $foreignKey, $localKey);
+            return parent::hasMany($related, $foreignKey, $localKey);
         }
 
         $column = explode('->', $localKey)[0];
