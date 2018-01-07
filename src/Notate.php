@@ -1,119 +1,50 @@
 <?php
 
-namespace Notate;
+namespace App;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 trait Notate
 {
-    public function newFromBuilder($attributes = [], $connection = null)
-    {
-        $model = parent::newFromBuilder($attributes, $connection);
-        $model = $this->jsonToCollection($model);
-        return $model;
-    }
-
-    protected function jsonToCollection(Model $model = null)
-    {
-        if (!$model) { $model = $this; }
-        foreach ($model->jsonColumns as $column)
-        {
-            if($model->{$column})
-            {
-                $model->{$column} = new Collection(json_decode($model->{$column}));
-            }
-        }
-        return $model;
-    }
-
-    protected function collectionToJson(Model $model = null)
-    {
-        if (!$model) { $model = $this; }
-        foreach ($model->jsonColumns as $column)
-        {
-            if($model->{$column} instanceof Collection)
-            {
-                $model->{$column} = $model->{$column}->toJson();
-            }
-        }
-        return $model;
-    }
-
-    protected function performUpdate(Builder $query)
-    {
-        $this->collectionToJson($this);
-        parent::performUpdate($query);
-        $this->jsonToCollection($this);
-        return true;
-    }
-
-    protected function performInsert(Builder $query)
-    {
-        $this->collectionToJson($this);
-        parent::performUpdate($query);
-        $this->jsonToCollection($this);
-        return true;
-    }
-
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
-        if(!str_contains($localKey, '->'))
-        {
-            return parent::hasOne($related, $foreignKey, $localKey);
-        }
+        $instance = $this->newRelatedInstance($related);
 
-        $column = explode('->', $localKey)[0];
-        $search = str_replace('->', '.', str_replace_first($column . '->', '', $localKey));
-        $property = debug_backtrace()[1]['function'];
+        $foreignKey = $foreignKey ?: $this->getForeignKey();
 
-        if(empty($this->appends[$property])) { $this->appends[] = $property; }
-
-        if(array_has(json_decode($this->{$column}->toJson(), true), $search))
-        {
-            $this->setAttribute($property, with(new Collection($related::where($foreignKey, '=', array_get(json_decode($this->{$column}->toJson(), true), $search))->get()))->first());
-            return $this->getAttribute($property);
-        }
-        else
-        {
-            $this->setAttribute($property, new Collection());
-            return $this->getAttribute($property);
-        }
+        $localKey = $localKey ?: $this->getKeyName();
+        return new NotateHasOne($instance->newQuery(), $this, $instance->getTable().'.'.$foreignKey, $localKey);
     }
 
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
-        if(!str_contains($localKey, '->'))
-        {
-            return parent::hasMany($related, $foreignKey, $localKey);
-        }
+        $instance = $this->newRelatedInstance($related);
 
-        $column = explode('->', $localKey)[0];
-        $search = str_replace('->', '.', str_replace_first($column . '->', '', $localKey));
-        $property = debug_backtrace()[1]['function'];
+        $foreignKey = $foreignKey ?: $this->getForeignKey();
 
-        if(empty($this->appends[$property])) { $this->appends[] = $property; }
+        $localKey = $localKey ?: $this->getKeyName();
 
-        if(array_has(json_decode($this->{$column}->toJson(), true), $search))
-        {
-            $this->setAttribute($property, new Collection($related::where($foreignKey, '=', array_get(json_decode($this->{$column}->toJson(), true), $search))->get()));
-            return $this->getAttribute($property);
-        }
-        else
-        {
-            $this->setAttribute($property, new Collection());
-            return $this->getAttribute($property);
-        }
+        return new NotateHasMany(
+            $instance->newQuery(), $this, $instance->getTable().'.'.$foreignKey, $localKey
+        );
     }
 
-    public function __get($key)
+    public function belongsTo($related, $foreignKey = null, $ownerKey = null, $relation = null)
     {
-        if(method_exists($this, $key))
-        {
-            return $this->{$key}();
+        if (is_null($relation)) {
+            $relation = $this->guessBelongsToRelation();
         }
-        return $this->getAttribute($key);
-    }
 
+        $instance = $this->newRelatedInstance($related);
+
+        if (is_null($foreignKey)) {
+            $foreignKey = Str::snake($relation).'_'.$instance->getKeyName();
+        }
+
+        $ownerKey = $ownerKey ?: $instance->getKeyName();
+
+        return new NotateBelongsTo(
+            $instance->newQuery(), $this, $foreignKey, $ownerKey, $relation
+        );
+    }
 }
