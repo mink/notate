@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace Notate;
 
 use Illuminate\Support\Str;
 
