@@ -14,6 +14,11 @@ trait Notate
 
     public static function setJsonType($type)
     {
+        if(class_exists($type))
+        {
+            self::$jsonType = $type;
+            return;
+        }
         switch(strtolower($type))
         {
             case "collection":
@@ -56,12 +61,18 @@ trait Notate
     protected function convertJson(Model $model = null)
     {
         if(!$model) { $model = $this; }
+        if(!$model->jsonColumns) { return $model; }
         foreach ($model->jsonColumns as $column)
         {
             if($model->{$column})
             {
                 if(is_string($model->{$column}))
                 {
+                    if(class_exists(self::$jsonType))
+                    {
+                        $model->{$column} = new self::$jsonType($model->{$column});
+                        continue;
+                    }
                     switch(self::$jsonType)
                     {
                         case "object":
