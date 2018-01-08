@@ -112,7 +112,6 @@ trait Notate
             $instance->newQuery(), $this, $instance->getTable() . '.' . $foreignKey, $localKey
         );
     }
-
     public function belongsTo($related, $foreignKey = null, $ownerKey = null, $relation = null)
     {
         if (is_null($relation)) {
@@ -122,7 +121,7 @@ trait Notate
         $instance = $this->newRelatedInstance($related);
 
         if (is_null($foreignKey)) {
-            $foreignKey = Str::snake($relation) . '_' . $instance->getKeyName();
+            $foreignKey = Str::snake($relation).'_'.$instance->getKeyName();
         }
 
         $ownerKey = $ownerKey ?: $instance->getKeyName();
@@ -130,5 +129,6 @@ trait Notate
         return new NotateBelongsTo(
             $instance->newQuery(), $this, $foreignKey, $ownerKey, $relation
         );
+
     }
 }
