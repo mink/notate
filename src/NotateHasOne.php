@@ -23,7 +23,7 @@ class NotateHasOne extends HasOne
     {
         if(!str_contains($this->localKey,'->'))
         {
-            return $this->localKey;
+            return $this->parent->{$this->localKey};
         }
 
         $column = explode('->', $this->localKey)[0];
