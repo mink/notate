@@ -46,7 +46,10 @@ class User extends Model
 $user = new User;
 
 echo $user->guild->id;
+// can use the query builder as usual
 $equippedItems = $user->items()->where('equipped,0)->get();
+// eager loading support
+$users = User::with(['items','guild'])->get();
 ```
 
 #### JSON Conversions
@@ -60,18 +63,21 @@ class User extends Model
 
     // columns to convert to json
     public $jsonColumns = [
-        'stats'
+        'stats', 'resources'
     ];
 }
 ```
 
 ```php
-User::setJsonType('collection'); // stdClass by default at this time
+// stdClass by default at this time
+User::setJsonType('collection');
 
 $user = new User;
-$user->stats->forget('last_name');
+
+// can call any Collection method if set
+$user->resources->forget('stone');
 $user->stats->groupBy('first_name');
-$user->stats->isEmpty();
+$user->resources->isEmpty();
 $user->stats->random();
 $user->stats->avg->votes;
 ```
