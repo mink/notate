@@ -91,7 +91,7 @@ trait Notate
                 {
                     $model->{$column} = $this->{$column}->toJson();
                 }
-                elseif($model->{$column} instanceof stdClass)
+                elseif($model->{$column} instanceof stdClass || is_array($model->{$column}))
                 {
                     $model->{$column} = json_encode($this->{$column});
                     continue;
