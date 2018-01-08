@@ -58,24 +58,20 @@ class User extends Model
 {
     use Notate;
 
-    public function guild()
-    {
-        return $this->hasOne('Guild', 'id', 'stats->guild_id');
-    }
-    
-    public function items()
-    {
-        return $this->hasMany('Item', 'data->id', 'nested->some->property');
-    }
-    
-    public function role()
-    {
-        return $this->belongsTo('Role', 'name', 'stats->role->name');
-    }
+    // columns to convert to json
+    public $jsonColumns = [
+        'stats'
+    ];
 }
 ```
 
 ```php
+User::setJsonType('collection'); // stdClass by default at this time
+
 $user = new User;
-$user->stats->
+$user->stats->forget('last_name');
+$user->stats->groupBy('first_name');
+$user->stats->isEmpty();
+$user->stats->random();
+$user->stats->avg->votes;
 ```
