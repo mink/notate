@@ -47,7 +47,7 @@ $user = new User;
 
 echo $user->guild->id;
 // can use the query builder as usual
-$equippedItems = $user->items()->where('equipped,0)->get();
+$equippedItems = $user->items()->where('equipped',0)->get();
 // eager loading support
 $users = User::with(['items','guild'])->get();
 ```
