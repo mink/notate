@@ -1,6 +1,6 @@
 {
     "name": "notate/notate",
-    "description": "auto convert json columns to collections, relation support",
+    "description": "Put your JSON data to work in Eloquent. ",
     "license": "MIT",
     "keywords": ["notate","laravel","eloquent","json","collection","relationship"],
     "homepage": "https://github.com/mink/notate",
