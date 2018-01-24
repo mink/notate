@@ -64,7 +64,7 @@ trait Notate
         if(!$model->jsonColumns) { return $model; }
         foreach ($model->jsonColumns as $column)
         {
-            if($model->{$column})
+            if(isset($model->{$column}))
             {
                 if(is_string($model->{$column}))
                 {
