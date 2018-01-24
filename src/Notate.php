@@ -70,7 +70,7 @@ trait Notate
                 {
                     if(class_exists(self::$jsonType))
                     {
-                        $model->{$column} = new self::$jsonType($model->{$column});
+                        $model->{$column} = new self::$jsonType(json_decode($model->{$column}));
                         continue;
                     }
                     switch(self::$jsonType)
