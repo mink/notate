@@ -1,13 +1,13 @@
 <?php
 
-namespace Notate;
+namespace Notate\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations;
 
-class NotateBelongsTo extends BelongsTo
+class BelongsTo extends Relations\BelongsTo
 {
     public function __construct(Builder $query, Model $child, $foreignKey, $ownerKey, $relation)
     {

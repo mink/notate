@@ -108,7 +108,7 @@ trait Notate
         $foreignKey = $foreignKey ?: $this->getForeignKey();
 
         $localKey = $localKey ?: $this->getKeyName();
-        return new NotateHasOne($instance->newQuery(), $this, $instance->getTable() . '.' . $foreignKey, $localKey);
+        return new Relations\HasOne($instance->newQuery(), $this, $instance->getTable() . '.' . $foreignKey, $localKey);
     }
 
     public function hasMany($related, $foreignKey = null, $localKey = null)
@@ -119,7 +119,7 @@ trait Notate
 
         $localKey = $localKey ?: $this->getKeyName();
 
-        return new NotateHasMany(
+        return new Relations\HasMany(
             $instance->newQuery(), $this, $instance->getTable() . '.' . $foreignKey, $localKey
         );
     }
@@ -137,7 +137,7 @@ trait Notate
 
         $ownerKey = $ownerKey ?: $instance->getKeyName();
 
-        return new NotateBelongsTo(
+        return new Relations\BelongsTo(
             $instance->newQuery(), $this, $foreignKey, $ownerKey, $relation
         );
 
