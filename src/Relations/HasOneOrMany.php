@@ -54,13 +54,13 @@ trait HasOneOrMany
         $keys = [];
         foreach($models as $model)
         {
-            $column = explode('->', $this->localKey)[0];
+            $column = $this->getColumnFromKey($this->localKey);
             if(isset($model->{$column}))
             {
-                $search = str_replace('->', '.', str_replace_first($column . '->', '', $this->localKey));
+                $search = $this->createSearchString($column, $this->localKey);
                 if($json = json_decode($model->{$column}, true))
                 {
-                    if(!is_object(array_get(array_dot($json),$search)) && !is_array(array_get(array_dot($json),$search)))
+                    if($this->isKeySearchable($json, $search))
                     {
                         $keys[] = array_get(array_dot($json),$search);
                     }
@@ -85,7 +85,7 @@ trait HasOneOrMany
         $dictionary = $this->buildDictionary($results);
 
         foreach ($models as $model) {
-            if(!str_contains($this->localKey, '->'))
+            if(!$this->isKeyJsonSearch($this->localKey))
             {
                 // parent behaviour
                 if (isset($dictionary[$key = $model->getAttribute($this->localKey)])) {
@@ -96,13 +96,13 @@ trait HasOneOrMany
             }
             else
             {
-                $column = explode('->', $this->localKey)[0];
+                $column = $this->getColumnFromKey($this->localKey);
                 if(isset($model->{$column}))
                 {
-                    $search = str_replace('->', '.', str_replace_first($column . '->', '', $this->localKey));
+                    $search = $this->createSearchString($column, $this->localKey);
                     if($json = json_decode($model->{$column}, true))
                     {
-                        if(!is_object(array_get(array_dot($json),$search)) && !is_array(array_get(array_dot($json),$search)))
+                        if($this->isKeySearchable($json, $search))
                         {
                             $model->setRelation(
                                 $relation, $this->getRelationValue($dictionary, array_get(array_dot($json),$search), $type)
@@ -123,19 +123,19 @@ trait HasOneOrMany
      */
     public function getParentKey()
     {
-        if(!str_contains($this->localKey,'->'))
+        if(!$this->isKeyJsonSearch($this->localKey))
         {
             return $this->parent->{$this->localKey};
         }
 
-        $column = explode('->', $this->localKey)[0];
+        $column = $this->getColumnFromKey($this->localKey);
 
         if(isset($this->parent->{$column}))
         {
-            $search = str_replace('->', '.', str_replace_first($column . '->', '', $this->localKey));
+            $search = $this->createSearchString($column, $this->localKey);
             if($json = json_decode($this->parent->{$column}, true))
             {
-                if(!is_object(array_get(array_dot($json),$search)) && !is_array(array_get(array_dot($json),$search)))
+                if($this->isKeySearchable($json, $search))
                 {
                     return array_get(array_dot($json),$search);
                 }
@@ -152,5 +152,51 @@ trait HasOneOrMany
             $this->query->where($this->foreignKey, '=', $this->getParentKey());
             $this->query->whereNotNull($this->foreignKey);
         }
+    }
+
+    /**
+     * Get the column to lookup from the key.
+     *
+     * @param $key
+     * @return string
+     */
+    private function getColumnFromKey($key): string
+    {
+        return explode('->', $key)[0];
+    }
+
+    /**
+     * Determines if the key suggests a JSON field.
+     *
+     * @param $key
+     * @return bool
+     */
+    private function isKeyJsonSearch($key): bool
+    {
+        return str_contains($key, '->');
+    }
+
+    /**
+     * Check if the key can be used in a query.
+     *
+     * @param $json
+     * @param $search
+     * @return bool
+     */
+    private function isKeySearchable($json, $search): bool
+    {
+        return !is_object(array_get(array_dot($json),$search)) && !is_array(array_get(array_dot($json),$search));
+    }
+
+    /**
+     * Create a string used to search the JSON.
+     *
+     * @param $column
+     * @param $key
+     * @return string
+     */
+    private function createSearchString($column, $key): string
+    {
+        return str_replace('->', '.', str_replace_first($column . '->', '', $key));
     }
 }
