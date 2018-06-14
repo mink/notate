@@ -2,18 +2,29 @@
 
 namespace Notate\Relations;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations;
+use Illuminate\Database\Eloquent\{Builder,Collection,Model,Relations};
 
 class BelongsTo extends Relations\BelongsTo
 {
+    /**
+     * Creates a BelongsTo instance from Notate.
+     *
+     * @param Builder $query
+     * @param Model $child
+     * @param $foreignKey
+     * @param $ownerKey
+     * @param $relation
+     */
     public function __construct(Builder $query, Model $child, $foreignKey, $ownerKey, $relation)
     {
         parent::__construct($query, $child, $foreignKey, $ownerKey, $relation);
     }
 
+    /**
+     * Get the model's column result for the query where clause.
+     *
+     * @return mixed
+     */
     public function getChildKey()
     {
         if(!str_contains($this->foreignKey,'->'))
@@ -34,9 +45,11 @@ class BelongsTo extends Relations\BelongsTo
                 }
             }
         }
-
     }
 
+    /**
+     * Add constraints to the query to find relation matches.
+     */
     public function addConstraints()
     {
         if(!str_contains($this->foreignKey,'->'))
@@ -51,6 +64,11 @@ class BelongsTo extends Relations\BelongsTo
         }
     }
 
+    /**
+     * Add constraints to the query in an eager loading context.
+     *
+     * @param array $models
+     */
     public function addEagerConstraints(array $models)
     {
         $key = $this->related->getTable().'.'.$this->ownerKey;
@@ -58,6 +76,14 @@ class BelongsTo extends Relations\BelongsTo
         $this->getQuery()->whereIn($key, $this->getEagerModelKeys($models));
     }
 
+    /**
+     * Returns the models that match the relation constraints.
+     *
+     * @param array $models
+     * @param Collection $results
+     * @param string $relation
+     * @return array
+     */
     public function match(array $models, Collection $results, $relation)
     {
         if(!str_contains($this->foreignKey, '->'))
@@ -86,11 +112,17 @@ class BelongsTo extends Relations\BelongsTo
                     }
                 }
             }
-
         }
+
         return $models;
     }
 
+    /**
+     * Gather the keys from an array of related models.
+     *
+     * @param array $models
+     * @return array
+     */
     public function getEagerModelKeys(array $models)
     {
         if(!str_contains($this->foreignKey,'->'))
