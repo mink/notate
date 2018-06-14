@@ -27,22 +27,23 @@ class BelongsTo extends Relations\BelongsTo
      */
     public function getChildKey()
     {
-        if(!str_contains($this->foreignKey,'->'))
+        if(!$this->isKeyJsonSearch($this->foreignKey))
         {
             return $this->child->{$this->foreignKey};
         }
 
-        $column = explode('->', $this->foreignKey)[0];
+        $column = $this->getColumnFromKey($this->foreignKey);
 
         if(isset($this->child->{$column}))
         {
-            $search = str_replace('->', '.', str_replace_first($column . '->', '', $this->foreignKey));
-            if($json = json_decode($this->child->{$column}, true))
+            $search = $this->createSearchString($column, $this->foreignKey);
+
+            // futureproof for JSON conversion support
+            $json = ($this->isJson($this->child->{$column})) ? json_decode($this->child->{$column}, true) : $this->child->{$column};
+
+            if($this->isKeySearchable($json, $search))
             {
-                if(!is_object(array_get(array_dot($json),$search)) && !is_array(array_get(array_dot($json),$search)))
-                {
-                    return array_get(array_dot($json),$search);
-                }
+                return array_get(array_dot($json),$search);
             }
         }
     }
@@ -52,12 +53,12 @@ class BelongsTo extends Relations\BelongsTo
      */
     public function addConstraints()
     {
-        if(!str_contains($this->foreignKey,'->'))
+        if(!$this->isKeyJsonSearch($this->foreignKey))
         {
             return parent::addConstraints();
         }
 
-        if (static::$constraints) {
+        if(static::$constraints) {
             $table = $this->related->getTable();
 
             $this->getQuery()->where($table.'.'.$this->ownerKey, '=', $this->getChildKey());
@@ -69,7 +70,7 @@ class BelongsTo extends Relations\BelongsTo
      *
      * @param array $models
      */
-    public function addEagerConstraints(array $models)
+    public function addEagerConstraints(array $models): void
     {
         $key = $this->related->getTable().'.'.$this->ownerKey;
 
@@ -84,31 +85,32 @@ class BelongsTo extends Relations\BelongsTo
      * @param string $relation
      * @return array
      */
-    public function match(array $models, Collection $results, $relation)
+    public function match(array $models, Collection $results, $relation): array
     {
-        if(!str_contains($this->foreignKey, '->'))
+        if(!$this->isKeyJsonSearch($this->foreignKey))
         {
             return parent::match($models, $results, $relation);
         }
 
         foreach($models as $model)
         {
-            $column = explode('->', $this->foreignKey)[0];
+            $column = $this->getColumnFromKey($this->foreignKey);
             if(isset($model->{$column}))
             {
-                $search = str_replace('->', '.', str_replace_first($column . '->', '', $this->foreignKey));
-                if ($json = json_decode($model->{$column}, true))
+                $search = $this->createSearchString($column, $this->foreignKey);
+
+                // futureproof for JSON conversion support
+                $json = ($this->isJson($model->{$column})) ? json_decode($model->{$column}, true) : $model->{$column};
+
+                if($this->isKeySearchable($json, $search))
                 {
-                    if (!is_object(array_get(array_dot($json), $search)) && !is_array(array_get(array_dot($json), $search)))
+                    foreach($results as $result)
                     {
-                        foreach($results as $result)
+                        if(array_get(array_dot($json), $search) == $result->{$this->ownerKey})
                         {
-                            if(array_get(array_dot($json), $search) == $result->{$this->ownerKey})
-                            {
-                                $model->setRelation($relation, $result);
-                            }
-                            break;
+                            $model->setRelation($relation, $result);
                         }
+                        break;
                     }
                 }
             }
@@ -123,9 +125,9 @@ class BelongsTo extends Relations\BelongsTo
      * @param array $models
      * @return array
      */
-    public function getEagerModelKeys(array $models)
+    public function getEagerModelKeys(array $models): array
     {
-        if(!str_contains($this->foreignKey,'->'))
+        if(!$this->isKeyJsonSearch($this->foreignKey))
         {
             return parent::getEagerModelKeys($models);
         }
@@ -133,20 +135,79 @@ class BelongsTo extends Relations\BelongsTo
         $keys = [];
         foreach($models as $model)
         {
-            $column = explode('->', $this->foreignKey)[0];
+            $column = $this->getColumnFromKey($this->foreignKey);
             if(isset($model->{$column}))
             {
-                $search = str_replace('->', '.', str_replace_first($column . '->', '', $this->foreignKey));
-                if($json = json_decode($model->{$column}, true))
+                $search = $this->createSearchString($column, $this->foreignKey);
+
+                // futureproof for JSON conversion support
+                $json = ($this->isJson($model->{$column})) ? json_decode($model->{$column}, true) : $model->{$column};
+
+                if($this->isKeySearchable($json, $search))
                 {
-                    if(!is_object(array_get(array_dot($json),$search)) && !is_array(array_get(array_dot($json),$search)))
-                    {
-                        $keys[] = array_get(array_dot($json),$search);
-                    }
+                    $keys[] = array_get(array_dot($json),$search);
                 }
+
             }
         }
 
         return $keys;
+    }
+
+    /**
+     * Get the column to lookup from the key.
+     *
+     * @param $key
+     * @return string
+     */
+    private function getColumnFromKey($key): string
+    {
+        return explode('->', $key)[0];
+    }
+
+    /**
+     * Determines if the key suggests a JSON field.
+     *
+     * @param $key
+     * @return bool
+     */
+    private function isKeyJsonSearch($key): bool
+    {
+        return str_contains($key, '->');
+    }
+
+    /**
+     * Check if the key can be used in a query.
+     *
+     * @param $json
+     * @param $search
+     * @return bool
+     */
+    private function isKeySearchable($json, $search): bool
+    {
+        return !is_object(array_get(array_dot($json),$search)) && !is_array(array_get(array_dot($json),$search));
+    }
+
+    /**
+     * Create a string used to search the JSON.
+     *
+     * @param $column
+     * @param $key
+     * @return string
+     */
+    private function createSearchString($column, $key): string
+    {
+        return str_replace('->', '.', str_replace_first($column . '->', '', $key));
+    }
+
+    /**
+     * Determines if a sequence is JSON.
+     *
+     * @param $str
+     * @return bool
+     */
+    private function isJson($str): bool
+    {
+        return is_string($str) && (json_decode($str) && $str != json_decode($str));
     }
 }
