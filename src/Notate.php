@@ -2,103 +2,14 @@
 
 namespace Notate;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use stdClass;
 
 trait Notate
 {
-    public static $jsonType;
-
-    public static function setJsonType($type)
     {
-        if(class_exists($type))
-        {
-            self::$jsonType = $type;
-            return;
-        }
-        switch(strtolower($type))
-        {
-            case "collection":
-                self::$jsonType = 'collection';
-                break;
-            case "object":
-            case "stdclass":
-            default:
-                self::$jsonType = 'object';
-                break;
-            case "array":
-                self::$jsonType = 'array';
-                break;
-        }
     }
 
-    public function newFromBuilder($attributes = [], $connection = null)
     {
-        $model = parent::newFromBuilder($attributes, $connection);
-        $model->convertJson();
-        return $model;
-    }
-
-    protected function performUpdate(Builder $query)
-    {
-        $this->convertJson();
-        parent::performUpdate($query);
-        $this->convertJson();
-        return true;
-    }
-
-    protected function performInsert(Builder $query)
-    {
-        $this->convertJson();
-        parent::performInsert($query);
-        $this->convertJson();
-        return true;
-    }
-
-    protected function convertJson(Model $model = null)
-    {
-        if(!$model) { $model = $this; }
-        if(!$model->jsonColumns) { return $model; }
-        foreach ($model->jsonColumns as $column)
-        {
-            if(isset($model->{$column}))
-            {
-                if(is_string($model->{$column}))
-                {
-                    if(class_exists(self::$jsonType))
-                    {
-                        $model->{$column} = new self::$jsonType(json_decode($model->{$column}));
-                        continue;
-                    }
-                    switch(self::$jsonType)
-                    {
-                        case "object":
-                        default:
-                        case null:
-                            $model->{$column} = json_decode($this->{$column});
-                            break;
-                        case "array":
-                        case "collection":
-                            $model->{$column} = collect(json_decode($this->{$column},true));
-                            break;
-                    }
-                    continue;
-                }
-                elseif($model->{$column} instanceof Collection)
-                {
-                    $model->{$column} = $this->{$column}->toJson();
-                }
-                elseif($model->{$column} instanceof stdClass || is_array($model->{$column}))
-                {
-                    $model->{$column} = json_encode($this->{$column});
-                    continue;
-                }
-            }
-        }
-        return $model;
     }
 
     public function hasOne($related, $foreignKey = null, $localKey = null)
