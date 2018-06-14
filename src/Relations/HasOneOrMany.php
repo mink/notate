@@ -2,7 +2,8 @@
 
 namespace Notate\Relations;
 
-use Illuminate\Database\Eloquent\{Builder,Collection,Model,Relations\Relation};
+use Illuminate\Database\Eloquent\{Builder,Collection,Model};
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 trait HasOneOrMany
 {
@@ -58,12 +59,13 @@ trait HasOneOrMany
             if(isset($model->{$column}))
             {
                 $search = $this->createSearchString($column, $this->localKey);
-                if($json = json_decode($model->{$column}, true))
+
+                // futureproof for JSON conversion support
+                $json = ($this->isJson($model->{$column})) ? json_decode($model->{$column}, true) : $model->{$column};
+
+                if($this->isKeySearchable($json, $search))
                 {
-                    if($this->isKeySearchable($json, $search))
-                    {
-                        $keys[] = array_get(array_dot($json),$search);
-                    }
+                    $keys[] = array_get(array_dot($json),$search);
                 }
             }
         }
@@ -100,14 +102,15 @@ trait HasOneOrMany
                 if(isset($model->{$column}))
                 {
                     $search = $this->createSearchString($column, $this->localKey);
-                    if($json = json_decode($model->{$column}, true))
+
+                    // futureproof for JSON conversion support
+                    $json = ($this->isJson($model->{$column})) ? json_decode($model->{$column}, true) : $model->{$column};
+
+                    if($this->isKeySearchable($json, $search))
                     {
-                        if($this->isKeySearchable($json, $search))
-                        {
-                            $model->setRelation(
-                                $relation, $this->getRelationValue($dictionary, array_get(array_dot($json),$search), $type)
-                            );
-                        }
+                        $model->setRelation(
+                            $relation, $this->getRelationValue($dictionary, array_get(array_dot($json),$search), $type)
+                        );
                     }
                 }
             }
@@ -198,5 +201,16 @@ trait HasOneOrMany
     private function createSearchString($column, $key): string
     {
         return str_replace('->', '.', str_replace_first($column . '->', '', $key));
+    }
+
+    /**
+     * Determines if a sequence is JSON.
+     *
+     * @param $str
+     * @return bool
+     */
+    private function isJson($str): bool
+    {
+        return is_string($str) && (json_decode($str) && $str != json_decode($str));
     }
 }
