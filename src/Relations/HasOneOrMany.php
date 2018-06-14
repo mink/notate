@@ -47,7 +47,7 @@ trait HasOneOrMany
      */
     protected function getKeys(array $models, $key = null): array
     {
-        if(!str_contains($this->localKey,'->'))
+        if(!$this->isKeyJsonSearch($this->localKey))
         {
             return parent::getKeys($models,$key);
         }
@@ -136,12 +136,13 @@ trait HasOneOrMany
         if(isset($this->parent->{$column}))
         {
             $search = $this->createSearchString($column, $this->localKey);
-            if($json = json_decode($this->parent->{$column}, true))
+
+            // futureproof for JSON conversion support
+            $json = ($this->isJson($this->parent->{$column})) ? json_decode($this->parent->{$column}, true) : $this->parent->{$column};
+
+            if($this->isKeySearchable($json, $search))
             {
-                if($this->isKeySearchable($json, $search))
-                {
-                    return array_get(array_dot($json),$search);
-                }
+                return array_get(array_dot($json),$search);
             }
         }
     }

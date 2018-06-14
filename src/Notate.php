@@ -1,6 +1,7 @@
 <?php
 
 namespace Notate;
+
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Notate\Relations\{HasOne,HasMany,BelongsTo};
 
