@@ -171,6 +171,10 @@ trait Notate
         {
             return false;
         }
+        if($str == '[]')
+        {
+            return true;
+        }
         $json = json_decode($str);
         return $json && $str != $json;
     }
