@@ -122,7 +122,7 @@ trait Notate
     protected function convertJson(Model $model = null)
     {
         if(!$model) { $model = $this; }
-        $class = Config::getClass();
+        $class = config('notate.method');
         if($class)
         {
             foreach($model->attributes as $key => $value)
