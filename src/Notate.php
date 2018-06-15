@@ -122,8 +122,8 @@ trait Notate
     protected function convertJson(Model $model = null)
     {
         if(!$model) { $model = $this; }
-        $class = config('notate.method');
-        if($class)
+        $method = config('notate.method');
+        if($method)
         {
             foreach($model->attributes as $key => $value)
             {
@@ -131,17 +131,28 @@ trait Notate
                 {
                     if($this->isJson($value))
                     {
-                        $this->{$key} = new $class(json_decode($value, true));
+                        if($method == 'array')
+                        {
+                            $this->{$key} = json_decode($value, true);
+                        }
+                        elseif($method == 'object')
+                        {
+                            $this->{$key} = json_decode($value);
+                        }
+                        elseif(class_exists($method))
+                        {
+                            $this->{$key} = new $method(json_decode($value, true));
+                        }
                     }
                 } else {
                     if($value instanceof Jsonable)
                     {
                         $this->{$key} = $this->{$key}->toJson();
                     }
-                    /*elseif(is_array($value) || is_object($value))
+                    elseif(is_array($value) || is_object($value))
                     {
                         $this->{$key} = json_encode($value);
-                    }*/
+                    }
                 }
             }
         }
