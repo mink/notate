@@ -1,8 +1,8 @@
 # Notate
 
-Notate is a tool for Eloquent that allows you to work with JSON columns efficiently. Notate allows you to create complete Eloquent relationships using JSON column data, as well as converting your model JSON columns into objects automatically.
+Notate is a tool for Eloquent that allows you to work with JSON columns efficiently. Notate allows you to create complete `HasOne`, `HasMany` and `BelongsTo` relationships using the properties of your column's JSON data.
 
-At this time, Notate currently supports HasOne, HasMany and BelongsTo relationships. JSON columns can be automatically converted into an stdClass or an instance of `Illuminate\Support\Collection` and will be converted back upon saving changes to the database.
+Notate also allows you to automatically convert JSON columns of your models into a format you can work with, and conver it back into JSON when you need to update the database. By default, any specified JSON columns will be converted into a `Collection` instance, but can be configured to be convert into an object, an array or any class that takes an array as a parameter.
 
 ### Installation
 
@@ -14,7 +14,7 @@ composer require notate/notate
 
 ### Usage
 
-Add the trait `Notate\Notate` to your Eloquent model and you will be able to reference your JSON columns as the local key when creating relationships.
+Add the `Notate\Notate` trait to your Eloquent models and you will be able to reference JSON columns on both ends when creating relationships.
 
 #### Relationships
 
@@ -43,11 +43,13 @@ class User extends Model
 ```
 
 ```php
-$user = new User;
+$user = User::find(1);
 
 echo $user->guild->id;
+
 // can use the query builder as usual
 $equippedItems = $user->items()->where('equipped',0)->get();
+
 // eager loading support
 $users = User::with(['items','guild'])->get();
 ```
@@ -61,20 +63,13 @@ class User extends Model
 {
     use Notate;
 
-    // columns to convert to json
-    public $jsonColumns = [
-        'stats', 'resources'
-    ];
+    // columns you wish to convert from json
+    protected $json = ['stats', 'resources'];
 }
 ```
 
 ```php
-// stdClass by default at this time
-User::setJsonType('collection');
-
-$user = new User;
-
-// can call any Collection method if set
+// will be a Collection by default, configure in config/notate.php
 $user->resources->forget('stone');
 $user->stats->groupBy('first_name');
 $user->resources->isEmpty();
