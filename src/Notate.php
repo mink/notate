@@ -127,6 +127,10 @@ trait Notate
         {
             foreach($model->attributes as $key => $value)
             {
+                if(!in_array($key, $this->json ?? []))
+                {
+                    continue;
+                }
                 if(is_string($value))
                 {
                     if($this->isJson($value))
