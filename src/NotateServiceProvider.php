@@ -15,7 +15,7 @@ class NotateServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__.'/../config/config.php' => config_path('notate.php')
-        ], 'config');
+        ]);
 
     }
 }
