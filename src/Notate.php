@@ -64,6 +64,7 @@ trait Notate
      */
     public function belongsTo($related, $foreignKey = null, $ownerKey = null, $relation = null)
     {
+        $relation =  $relation ?? $this->guessBelongsToRelation();
         $instance = $this->newRelatedInstance($related);
         $foreignKey = $foreignKey ?? snake_case($relation).'_'.$instance->getKeyName();
         $ownerKey = $ownerKey ?? $instance->getKeyName();
