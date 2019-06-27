@@ -133,9 +133,9 @@ trait Notate
                 {
                     continue;
                 }
-                if($this->{$key} === null)
+                if($value === null)
                 {
-                    $this->{$key} = "{}";
+                    $value = "{}";
                 }
                 if(is_string($value))
                 {
