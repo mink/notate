@@ -1,12 +1,18 @@
 # Notate
 
-Notate is a tool for Eloquent that allows you to work with JSON columns efficiently. Notate allows you to create complete `HasOne`, `HasMany` and `BelongsTo` relationships using the properties of your column's JSON data.
+Notate is a tool for the Laravel Eloquent ORM that offers several utilities to help you interact with JSON fields.
+Notate allows you to create complete `HasOne`, `HasMany` and `BelongsTo` relationships using properties defined in a JSON field.
 
-Notate also allows you to automatically convert JSON columns of your models into a format you can work with, and conver it back into JSON when you need to update the database. By default, any specified JSON columns will be converted into a `Collection` instance, but can be configured to be convert into an object, an array or any class that takes an array as a parameter.
+Notate also allows you to automatically convert selected JSON fields into a format you can work with. Unlike using accessors and mutators,
+this conversion will allow you to interact with the data directly. When it is time to update the database, the field will be converted
+back into a valid JSON object.
+
+By default, any specified JSON columns will be converted into a `Collection` instance, but can be configured to be converted into an object,
+array or any class that takes an array as a parameter - allowing you to parse the JSON however you like.
 
 ### Installation
 
-Run the following command in your terminal in the directory of your project.
+Run the following command in your terminal in the directory of your Laravel project.
 
 ```
 composer require notate/notate
@@ -27,17 +33,17 @@ class User extends Model
 
     public function guild()
     {
-        return $this->hasOne('Guild', 'id', 'stats->guild_id');
+        return $this->hasOne(Guild::class, 'id', 'stats->guild_id');
     }
     
     public function items()
     {
-        return $this->hasMany('Item', 'data->id', 'nested->some->property');
+        return $this->hasMany(Item::class, 'data->id', 'nested->some->property');
     }
     
     public function role()
     {
-        return $this->belongsTo('Role', 'name', 'stats->role->name');
+        return $this->belongsTo(Role::class, 'name', 'stats->role->name');
     }
 }
 ```
@@ -45,7 +51,8 @@ class User extends Model
 ```php
 $user = User::find(1);
 
-echo $user->guild->id;
+// user->nested->some->property == item->data->id
+echo $user->items->first()->data->id;
 
 // can use the query builder as usual
 $equippedItems = $user->items()->where('equipped',0)->get();
