@@ -132,6 +132,10 @@ trait Notate
                 {
                     continue;
                 }
+                if($this->{$key} === null)
+                {
+                    $this->{$key} = "{}";
+                }
                 if(is_string($value))
                 {
                     if($this->isJson($value))
