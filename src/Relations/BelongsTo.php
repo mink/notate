@@ -3,6 +3,8 @@
 namespace Notate\Relations;
 
 use Illuminate\Database\Eloquent\{Builder,Collection,Model,Relations};
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class BelongsTo extends Relations\BelongsTo
 {
@@ -43,7 +45,7 @@ class BelongsTo extends Relations\BelongsTo
 
             if($this->isKeySearchable($json, $search))
             {
-                return array_get(array_dot($json),$search);
+                return Arr::get(Arr::dot($json),$search);
             }
         }
     }
@@ -106,7 +108,7 @@ class BelongsTo extends Relations\BelongsTo
                 {
                     foreach($results as $result)
                     {
-                        if(array_get(array_dot($json), $search) == $result->{$this->ownerKey})
+                        if(Arr::get(Arr::dot($json), $search) == $result->{$this->ownerKey})
                         {
                             $model->setRelation($relation, $result);
                         }
@@ -145,7 +147,7 @@ class BelongsTo extends Relations\BelongsTo
 
                 if($this->isKeySearchable($json, $search))
                 {
-                    $keys[] = array_get(array_dot($json),$search);
+                    $keys[] = Arr::get(Arr::dot($json),$search);
                 }
 
             }
@@ -173,7 +175,7 @@ class BelongsTo extends Relations\BelongsTo
      */
     private function isKeyJsonSearch($key): bool
     {
-        return str_contains($key, '->');
+        return Str::contains($key, '->');
     }
 
     /**
@@ -185,7 +187,7 @@ class BelongsTo extends Relations\BelongsTo
      */
     private function isKeySearchable($json, $search): bool
     {
-        return !is_object(array_get(array_dot($json),$search)) && !is_array(array_get(array_dot($json),$search));
+        return !is_object(Arr::get(Arr::dot($json),$search)) && !is_array(Arr::get(Arr::dot($json),$search));
     }
 
     /**
@@ -197,7 +199,7 @@ class BelongsTo extends Relations\BelongsTo
      */
     private function createSearchString($column, $key): string
     {
-        return str_replace('->', '.', str_replace_first($column . '->', '', $key));
+        return str_replace('->', '.', Str::replaceFirst($column . '->', '', $key));
     }
 
     /**

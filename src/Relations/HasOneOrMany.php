@@ -4,6 +4,8 @@ namespace Notate\Relations;
 
 use Illuminate\Database\Eloquent\{Builder,Collection,Model};
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 trait HasOneOrMany
 {
@@ -65,7 +67,7 @@ trait HasOneOrMany
 
                 if($this->isKeySearchable($json, $search))
                 {
-                    $keys[] = array_get(array_dot($json),$search);
+                    $keys[] = Arr::get(Arr::dot($json),$search);
                 }
             }
         }
@@ -109,7 +111,7 @@ trait HasOneOrMany
                     if($this->isKeySearchable($json, $search))
                     {
                         $model->setRelation(
-                            $relation, $this->getRelationValue($dictionary, array_get(array_dot($json),$search), $type)
+                            $relation, $this->getRelationValue($dictionary, Arr::get(Arr::dot($json),$search), $type)
                         );
                     }
                 }
@@ -142,7 +144,7 @@ trait HasOneOrMany
 
             if($this->isKeySearchable($json, $search))
             {
-                return array_get(array_dot($json),$search);
+                return Arr::get(Arr::dot($json),$search);
             }
         }
     }
@@ -177,7 +179,7 @@ trait HasOneOrMany
      */
     private function isKeyJsonSearch($key): bool
     {
-        return str_contains($key, '->');
+        return Str::contains($key, '->');
     }
 
     /**
@@ -189,7 +191,7 @@ trait HasOneOrMany
      */
     private function isKeySearchable($json, $search): bool
     {
-        return !is_object(array_get(array_dot($json),$search)) && !is_array(array_get(array_dot($json),$search));
+        return !is_object(Arr::get(Arr::dot($json),$search)) && !is_array(Arr::get(Arr::dot($json),$search));
     }
 
     /**
@@ -201,7 +203,7 @@ trait HasOneOrMany
      */
     private function createSearchString($column, $key): string
     {
-        return str_replace('->', '.', str_replace_first($column . '->', '', $key));
+        return str_replace('->', '.', Str::replaceFirst($column . '->', '', $key));
     }
 
     /**

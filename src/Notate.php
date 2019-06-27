@@ -6,6 +6,7 @@ use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
+use Illuminate\Support\Str;
 use Notate\Relations\{HasOne,HasMany,BelongsTo};
 
 trait Notate
@@ -66,7 +67,7 @@ trait Notate
     {
         $relation =  $relation ?? $this->guessBelongsToRelation();
         $instance = $this->newRelatedInstance($related);
-        $foreignKey = $foreignKey ?? snake_case($relation).'_'.$instance->getKeyName();
+        $foreignKey = $foreignKey ?? Str::snake($relation).'_'.$instance->getKeyName();
         $ownerKey = $ownerKey ?? $instance->getKeyName();
         $relation = $relation ?? $this->guessBelongsToRelation();
         return new BelongsTo($instance->newQuery(), $this, $foreignKey, $ownerKey, $relation);
