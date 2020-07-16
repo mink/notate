@@ -1,7 +1,6 @@
 # Notate
 
-Notate is a tool for the Laravel Eloquent ORM that offers several utilities to help you interact with JSON fields.
-Notate allows you to create complete `HasOne`, `HasMany` and `BelongsTo` relationships using properties defined in a JSON field.
+Notate is a tool for the Laravel Eloquent ORM that allows you to define `HasOne`, `HasMany` and `BelongsTo` relationships using properties defined in JSON on a foreign key.
 
 ### Installation
 
@@ -18,23 +17,25 @@ Add the `Notate\Notate` trait to your Eloquent models, and you will be able to r
 #### Relationships
 
 ```php
+use Illuminate\Database\Eloquent\Model;
 use Notate\Notate;
+use Notate\Relations\{HasOne, HasMany, BelongsTo};
 
 class User extends Model
 {
     use Notate;
 
-    public function guild()
+    public function guild(): HasOne
     {
         return $this->hasOne(Guild::class, 'id', 'stats->guild_id');
     }
     
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(Item::class, 'data->id', 'nested->some->property');
     }
     
-    public function role()
+    public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'name', 'stats->role->name');
     }
