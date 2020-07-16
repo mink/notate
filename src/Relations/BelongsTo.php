@@ -53,11 +53,12 @@ class BelongsTo extends Relations\BelongsTo
     /**
      * Add constraints to the query to find relation matches.
      */
-    public function addConstraints()
+    public function addConstraints(): void
     {
         if(!$this->isKeyJsonSearch($this->foreignKey))
         {
-            return parent::addConstraints();
+            parent::addConstraints();
+            return;
         }
 
         if(static::$constraints) {

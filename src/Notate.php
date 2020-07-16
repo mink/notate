@@ -63,7 +63,7 @@ trait Notate
      * @param null $relation
      * @return BelongsTo
      */
-    public function belongsTo($related, $foreignKey = null, $ownerKey = null, $relation = null)
+    public function belongsTo($related, $foreignKey = null, $ownerKey = null, $relation = null): BelongsTo
     {
         $relation =  $relation ?? $this->guessBelongsToRelation();
         $instance = $this->newRelatedInstance($related);
